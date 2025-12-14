@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3752684087450008014}
   - component: {fileID: 1773141681072060202}
   - component: {fileID: -1875176452003427174}
+  - component: {fileID: 2965530822347786424}
   m_Layer: 0
   m_Name: RedOrnament
   m_TagString: Untagged
@@ -105,6 +106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff4e68e473f5bdc40918a2fdd1f8561a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DragOrnaments
+  ornamentColor: 0
 --- !u!58 &-1875176452003427174
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -135,9 +137,21 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!114 &2965530822347786424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3603843162620232923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50ce0b8540bcc9f46bdd73345670a43e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ornament

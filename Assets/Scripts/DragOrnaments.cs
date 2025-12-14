@@ -1,11 +1,21 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
+public enum OrnamentColor
+{
+    Red,
+    Green,
+    Gold
+}
+
 public class DragOrnaments : MonoBehaviour
 {
-    private bool isDragging;
+    public bool isDragging;
     private Vector3 offset;
     private Camera cam;
+
+    public OrnamentColor ornamentColor;
 
     void Awake()
     {
