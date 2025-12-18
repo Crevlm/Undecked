@@ -1,75 +1,76 @@
+using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class CountdownTimer : MonoBehaviour
 {
     [Header("Timer Settings")]
-    [SerializeField] private float countDownTime = 12f; // total number of seconds for the countdown
+    [SerializeField] private float countDownTime = 12f; // Total number of seconds for the countdown.
 
     [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI timerText; //TMPro Text Asset
-    [SerializeField] private Button gameStartButton; // Start button to start the timer
+    [SerializeField] private TextMeshProUGUI timerText; // TMPro Text asset for the timer display.
+
+    // Use these events to notify other systems when the countdown starts and ends.
+    public event Action CountdownStarted;
+    public event Action CountdownCompleted;
 
     private float currentTime;
     private bool timerRunning = false;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    /// <summary>
+    /// Gets whether the timer is currently running.
+    /// </summary>
+    public bool IsRunning => timerRunning;
+
+    /// <summary>
+    /// Gets the configured duration of the countdown timer in seconds.
+    /// </summary>
+    public float Duration => countDownTime;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created.
+    private void Start()
     {
-        currentTime = countDownTime; //Reset the timer to 12 seconds
-        UpdateTimerDisplay(); // Update thes the timer to showcase the correct text 0:00
-
-        //Adds function of starting the countdown when the player hits the start button.
-        if (gameStartButton != null)
-        {
-            gameStartButton.onClick.AddListener(StartCountdown);
-        }
-
+        currentTime = Mathf.Max(0f, countDownTime); // Reset the timer to the configured duration.
+        UpdateTimerDisplay(); // Update the timer display to show the correct starting text (e.g., 12:00).
     }
 
-    // Update is called once per frame
-    void Update()
+    // Update is called once per frame.
+    private void Update()
     {
-        
-        if (timerRunning)
-        {
-            //if there is currently time left on the clock continue reducing it by time.deltaTime
-            if (currentTime > 0)
-            {
-                currentTime -= Time.deltaTime;
-                UpdateTimerDisplay();
-            }
-            //if time is finished shut off the boolean, set the current time to 0, run OnCountdownComplete which allows for the game to be restarted
-            else
-            {
-                currentTime = 0;
-                timerRunning = false;
-                OnCountdownComplete();
-            }
-        }
+        if (!timerRunning)
+            return;
 
+        // Reduce time by deltaTime, clamping to 0 to avoid negative time display.
+        currentTime = Mathf.Max(0f, currentTime - Time.deltaTime);
+        UpdateTimerDisplay();
+
+        // If time is finished, shut off the boolean, set the current time to 0, and run OnCountdownComplete.
+        if (currentTime <= 0f)
+        {
+            timerRunning = false;
+            currentTime = 0f;
+            OnCountdownComplete();
+        }
     }
 
     /// <summary>
     /// Starts the countdown timer if it is not already running.
     /// </summary>
-    /// <remarks>Resets the timer to the configured countdown time and disables the game start button, if
-    /// assigned, to prevent multiple countdowns from being started simultaneously.</remarks>
+    /// <remarks>
+    /// Resets the timer to the configured countdown time. Intended to be triggered by a separate game flow controller.
+    /// </remarks>
     public void StartCountdown()
     {
-        if (!timerRunning)
-        {
-            currentTime = countDownTime;
-            timerRunning = true;
+        if (timerRunning)
+            return;
 
-            if (gameStartButton != null)
-            {
-                gameStartButton.interactable = false;
-            }
-        }
+        currentTime = Mathf.Max(0f, countDownTime);
+        timerRunning = true;
+
+        UpdateTimerDisplay();
+        CountdownStarted?.Invoke();
     }
-    
+
     /// <summary>
     /// Stops the countdown timer if it is currently running.
     /// </summary>
@@ -79,67 +80,57 @@ public class CountdownTimer : MonoBehaviour
         timerRunning = false;
     }
 
-
     /// <summary>
     /// Resets the countdown timer to its initial value and updates the timer display.
     /// </summary>
-    /// <remarks>This method also enables the game start button if it is available, allowing the countdown to
-    /// be started again.</remarks>
+    /// <remarks>This method does not start the timer; it only returns it to its initial state.</remarks>
     public void ResetCountdown()
     {
         timerRunning = false;
-        currentTime = countDownTime;
+        currentTime = Mathf.Max(0f, countDownTime);
         UpdateTimerDisplay();
-
-        if (gameStartButton != null)
-        {
-            gameStartButton.interactable = true;
-        }
     }
-
 
     /// <summary>
-    /// Updates the timer display to show the current time in minutes and seconds.
+    /// Updates the timer display to show the current time in seconds and centiseconds (SS:CC).
     /// </summary>
-    /// <remarks>This method formats the current timer value and updates the associated text display. If the
-    /// timer text component is not assigned, the method performs no action.</remarks>
+    /// <remarks>
+    /// This method formats the current timer value and updates the associated text display.
+    /// If the timer text component is not assigned, the method performs no action.
+    /// </remarks>
     private void UpdateTimerDisplay()
     {
-        if (timerText != null)
-        {
-            int seconds = Mathf.FloorToInt(currentTime);
-            int milliseconds = Mathf.FloorToInt((currentTime - seconds) * 100);
-            timerText.text = string.Format("{0:00}:{1:00}", seconds, milliseconds);
-        }
-    }
+        if (timerText == null)
+            return;
 
+        // Convert to centiseconds so 12.00 displays as "12:00" and 0 displays as "00:00".
+        int totalCentiseconds = Mathf.CeilToInt(Mathf.Max(0f, currentTime) * 100f);
+        int seconds = totalCentiseconds / 100;
+        int centiseconds = totalCentiseconds % 100;
+
+        timerText.text = string.Format("{0:00}:{1:00}", seconds, centiseconds);
+    }
 
     /// <summary>
     /// Handles actions to perform when the countdown has finished.
     /// </summary>
-    /// <remarks>This method updates the timer display and re-enables the start button if it is available. It
-    /// is intended to be called when a countdown sequence completes.</remarks>
+    /// <remarks>
+    /// This method updates the timer display and raises the completion event.
+    /// It is intended to be called when a countdown sequence completes.
+    /// </remarks>
     private void OnCountdownComplete()
     {
         Debug.Log("Countdown Complete!");
         UpdateTimerDisplay();
-
-        //Re-enable the start button
-        if (gameStartButton != null)
-        {
-            gameStartButton.interactable = true;
-        }
+        CountdownCompleted?.Invoke();
     }
 
 
     // Add the functionality of what happens after the countdown ends.
-    //Ideas:
-
-    //Dialogue Trigger
-    //Score Saved
-    //Option to read the instructions again
-    //See High Scores
-    //Exit Game 
-
-
+    // Ideas:
+    // Dialogue Trigger
+    // Score Saved - DONE
+    // Option to read the instructions again
+    // See High Scores - DONE
+    // Exit Game
 }
