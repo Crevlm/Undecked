@@ -4,17 +4,7 @@ public class Ornament : MonoBehaviour
 {
     private Vector3 startPosition;
 
-    /// <summary>
-    /// This enum is now redundant, as OrnamentColor is now defined in DragOrnaments.cs.
-    /// </summary>
-    //public enum OrnamentColor
-    //{
-    //    Red,
-    //    Green,
-    //    Gold
-    //}
-
-
+    
     private void Start()
     {
         // Stores the starting position for return.
