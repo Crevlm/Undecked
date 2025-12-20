@@ -1790,6 +1790,7 @@ MonoBehaviour:
   finalScoreText: {fileID: 2069507100}
   finalHighScoreText: {fileID: 672631884}
   ornamentRoot: {fileID: 1666404167}
+  ornamentSpawner: {fileID: 922516707}
 --- !u!114 &922516707
 MonoBehaviour:
   m_ObjectHideFlags: 0
