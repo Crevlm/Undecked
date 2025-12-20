@@ -20,10 +20,17 @@ public class DragOrnaments : MonoBehaviour
     [Header("Round Control")]
     [SerializeField] private CountdownTimer countdownTimer; // If assigned, dragging only works while the timer is running.
 
+    [Header("Drag Visual Effects")]
+    [SerializeField] private float dragScale = 1.2f; // scales slightly larger when picked up
+    [SerializeField] private float dragRotationRange = 10f; // max rotation in degrees.
+
+
     [Header("Drop Detection")]
     [SerializeField] private float dropGraceSeconds = 0.15f; // How long after releasing counts as "just dropped" (for trigger evaluation).
 
     private float droppedUntilTime = -1f;
+    private Vector3 originalScale;
+    private Quaternion originalRotation;
 
     /// <summary>
     /// True if the ornament was dropped very recently.
@@ -35,6 +42,8 @@ public class DragOrnaments : MonoBehaviour
     private void Awake()
     {
         cam = Camera.main; // Cache the camera reference.
+        originalScale = transform.localScale; // gets the original scale of the ornament
+        originalRotation = transform.rotation; // gets the original rotation of the ornament
     }
 
     private void Start()
@@ -66,6 +75,9 @@ public class DragOrnaments : MonoBehaviour
 
             // Mark this ornament as "just dropped" for a short window so CollectorBox can evaluate once.
             droppedUntilTime = Time.time + dropGraceSeconds;
+
+            transform.localScale = originalScale;
+            transform.rotation = originalRotation;
         }
 
         // Only move the item if the mouse is clicked on it.
@@ -88,6 +100,9 @@ public class DragOrnaments : MonoBehaviour
     {
         isDragging = false;
         droppedUntilTime = -1f;
+
+        transform.localScale = originalScale;
+        transform.rotation = originalRotation;
     }
 
     /// <summary>
@@ -102,10 +117,15 @@ public class DragOrnaments : MonoBehaviour
         Vector2 mouseWorld = cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         RaycastHit2D hit = Physics2D.Raycast(mouseWorld, Vector2.zero);
 
+
+
         if (hit && hit.collider.gameObject == gameObject)
         {
             isDragging = true;
             offset = transform.position - (Vector3)mouseWorld;
+
+            transform.localScale = originalScale * dragScale;
+            transform.rotation = Quaternion.Euler(0, 0, Random.Range(-dragRotationRange, dragRotationRange));
         }
     }
 

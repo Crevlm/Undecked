@@ -8,6 +8,8 @@ public class CollectorBox : MonoBehaviour
     [SerializeField] private int pointsPerCorrect = 12;  // Points awarded for a correct ornament.
     [SerializeField] private int pointsPerWrong = -6;    // Points deducted for a wrong ornament (not currently in use, can be implemented later).
     [SerializeField] private ScoreManager scoreManager; // Score receiver.
+    [SerializeField] private GameObject scoreFeedbackPrefab; // Pop up score increaser
+    
 
     private void Start()
     {
@@ -35,7 +37,19 @@ public class CollectorBox : MonoBehaviour
         if (drag.ornamentColor == boxColor)
         {
             Debug.Log("Correct!");
-
+            if (scoreFeedbackPrefab != null)
+            {
+                Canvas canvas = FindFirstObjectByType<Canvas>();
+                if (canvas != null)
+                {
+                    GameObject feedback = Instantiate(scoreFeedbackPrefab, canvas.transform);
+                    ScoreFeedback feedbackScript = feedback.GetComponent<ScoreFeedback>();
+                    if (feedbackScript != null)
+                    {
+                        feedbackScript.SetText($"+{pointsPerCorrect}");
+                    }
+                }
+            }
             if (scoreManager != null)
             {
                 scoreManager.AddPoints(pointsPerCorrect);

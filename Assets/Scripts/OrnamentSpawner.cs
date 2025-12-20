@@ -10,7 +10,7 @@ public class OrnamentSpawner : MonoBehaviour
     public SpriteRenderer treeRenderer;
     public int ornamentCount = 20;
     public int maxAttempts = 100;
-    public float minOrnamentSpacing = 0.25f;
+    public float minOrnamentSpacing = 1f;
 
     // Tracks previously used spawn positions for spacing checks
     private readonly List<Vector3> spawnedPositions = new();
