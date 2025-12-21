@@ -115,9 +115,12 @@ public class DragOrnaments : MonoBehaviour
     private void TryPickUp()
     {
         Vector2 mouseWorld = cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        RaycastHit2D hit = Physics2D.Raycast(mouseWorld, Vector2.zero);
 
+        
+        int ornamentLayerMask = 1 << 6; // Layer 6
+        RaycastHit2D hit = Physics2D.Raycast(mouseWorld, Vector2.zero, Mathf.Infinity, ornamentLayerMask);
 
+        Debug.Log($"Raycast hit: {(hit ? hit.collider.name : "nothing")}");
 
         if (hit && hit.collider.gameObject == gameObject)
         {

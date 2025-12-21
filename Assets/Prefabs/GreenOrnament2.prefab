@@ -11,11 +11,11 @@ GameObject:
   - component: {fileID: 6825365521812959431}
   - component: {fileID: 3752684087450008014}
   - component: {fileID: 1773141681072060202}
-  - component: {fileID: -1875176452003427174}
-  - component: {fileID: 2965530822347786424}
-  - component: {fileID: -2321219153847770178}
+  - component: {fileID: 6544428202381390784}
+  - component: {fileID: -1028725955713424904}
+  - component: {fileID: 554579827569686044}
   m_Layer: 6
-  m_Name: RedOrnament
+  m_Name: GreenOrnament2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -85,8 +85,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 563ba5e7cdf40d8418e31bd6ebbca4c7, type: 3}
-  m_Color: {r: 0.8037735, g: 0.10160909, b: 0.10160909, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 563e19659d1e4c54f86a7b76d471d125, type: 3}
+  m_Color: {r: 0.01346385, g: 0.23018861, b: 0.031239986, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -108,12 +108,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DragOrnaments
   isDragging: 0
-  ornamentColor: 0
+  ornamentColor: 1
   countdownTimer: {fileID: 0}
   dragScale: 1.2
   dragRotationRange: 10
   dropGraceSeconds: 0.15
---- !u!58 &-1875176452003427174
+--- !u!58 &6544428202381390784
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -149,7 +149,7 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 4.75
---- !u!114 &2965530822347786424
+--- !u!114 &-1028725955713424904
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -161,7 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ce0b8540bcc9f46bdd73345670a43e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Ornament
---- !u!50 &-2321219153847770178
+--- !u!50 &554579827569686044
 Rigidbody2D:
   serializedVersion: 5
   m_ObjectHideFlags: 0

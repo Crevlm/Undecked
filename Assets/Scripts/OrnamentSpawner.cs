@@ -27,7 +27,7 @@ public class OrnamentSpawner : MonoBehaviour
     /// <summary>
     /// Spawns the configured number of ornaments by creating each ornament individually.
     /// </summary>
- 
+
     void SpawnAllOrnaments()
     {
         if (treeRenderer == null)
@@ -45,6 +45,13 @@ public class OrnamentSpawner : MonoBehaviour
         for (int i = 0; i < ornamentCount; i++)
         {
             SpawnRandomOrnament();
+        }
+
+        
+        PolygonCollider2D treeCollider = treeRenderer.GetComponent<PolygonCollider2D>();
+        if (treeCollider != null)
+        {
+            treeCollider.enabled = false;
         }
     }
 
@@ -126,24 +133,26 @@ public class OrnamentSpawner : MonoBehaviour
     /// <summary>
     /// Returns a randomly selected point located on the visible area of the tree.
     /// </summary>
-    
+
     Vector3 GetRandomPointOnTree()
     {
         Bounds bounds = treeRenderer.bounds;
-        
+        PolygonCollider2D treeCollider = treeRenderer.GetComponent<PolygonCollider2D>();
+
+        // Add margin to keep ornaments away from bottom
+        float marginBottom = bounds.size.y * 0.15f; // //value from the bottom of the tree to keep them from weirdly spawning too close to the boxes
+
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            //Random point on the Tree's bounds
             float x = Random.Range(bounds.min.x, bounds.max.x);
-            float y = Random.Range(bounds.min.y, bounds.max.y);
+            float y = Random.Range(bounds.min.y + marginBottom, bounds.max.y); 
             Vector3 worldPos = new Vector3(x, y, 0);
 
-            //Checks to see if this point is on a visable pixel on the tree
-            if (IsPointOnTree(worldPos))
+            // Check if point is inside the polygon collider
+            if (treeCollider != null && treeCollider.OverlapPoint(worldPos))
             {
                 return worldPos;
             }
-
         }
 
         return treeRenderer.transform.position;
