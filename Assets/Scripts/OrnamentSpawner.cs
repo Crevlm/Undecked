@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public class OrnamentSpawner : MonoBehaviour
@@ -15,20 +14,35 @@ public class OrnamentSpawner : MonoBehaviour
     // Tracks previously used spawn positions for spacing checks
     private readonly List<Vector3> spawnedPositions = new();
 
-    // Tracks spawn ornament instances to be destroyed on restart
+    // Tracks spawned ornament instances to be destroyed on restart
     private readonly List<GameObject> spawnedOrnaments = new();
 
+    private PolygonCollider2D treeCollider;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Start()
     {
+        CacheTreeCollider();
         SpawnAllOrnaments();
     }
+
+    /// <summary>
+    /// Clears all previously spawned ornaments and spawns a fresh set.
+    /// </summary>
+    /// <remarks>
+    /// This is intended to be called by a game flow controller when restarting a round.
+    /// </remarks>
+    public void RespawnAllOrnaments()
+    {
+        ClearSpawnedOrnaments();
+        CacheTreeCollider();
+        SpawnAllOrnaments();
+    }
+
     /// <summary>
     /// Spawns the configured number of ornaments by creating each ornament individually.
     /// </summary>
-
-    void SpawnAllOrnaments()
+    private void SpawnAllOrnaments()
     {
         if (treeRenderer == null)
         {
@@ -42,13 +56,18 @@ public class OrnamentSpawner : MonoBehaviour
             return;
         }
 
+        // Enable the tree collider during spawning so OverlapPoint() works.
+        if (treeCollider != null)
+        {
+            treeCollider.enabled = true;
+        }
+
         for (int i = 0; i < ornamentCount; i++)
         {
             SpawnRandomOrnament();
         }
 
-        
-        PolygonCollider2D treeCollider = treeRenderer.GetComponent<PolygonCollider2D>();
+        // Disable afterward so the tree collider does not block clicking/raycasting ornaments.
         if (treeCollider != null)
         {
             treeCollider.enabled = false;
@@ -56,23 +75,10 @@ public class OrnamentSpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// Clears all previously spawned ornaments and spawns a fresh set.
-    /// </summary>
-    /// <remarks>
-    /// This is intended to be called by a game flow controller when restarting a round.
-    /// </remarks>
-    public void RespawnAllOrnaments()
-    {
-        ClearSpawnedOrnaments();
-        SpawnAllOrnaments();
-    }
-
-    /// <summary>
     /// Attempts to spawn a randomly selected ornament at a valid position on the tree, ensuring it is not placed too
     /// close to existing ornaments.
     /// </summary>
-
-    void SpawnRandomOrnament()
+    private void SpawnRandomOrnament()
     {
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
@@ -118,9 +124,11 @@ public class OrnamentSpawner : MonoBehaviour
     /// Determines whether the specified candidate position is too close to any existing ornament positions.
     /// </summary>
     /// <param name="candidate">The position to evaluate for proximity to other ornaments.</param>
-    /// <returns><see langword="true"/> if the candidate position is closer than the minimum allowed spacing to any existing
-    /// ornament; otherwise, <see langword="false"/>.</returns>
-    bool IsTooCloseToOtherOrnaments(Vector3 candidate)
+    /// <returns>
+    /// <see langword="true"/> if the candidate position is closer than the minimum allowed spacing to any existing
+    /// ornament; otherwise, <see langword="false"/>.
+    /// </returns>
+    private bool IsTooCloseToOtherOrnaments(Vector3 candidate)
     {
         foreach (var pos in spawnedPositions)
         {
@@ -130,26 +138,33 @@ public class OrnamentSpawner : MonoBehaviour
 
         return false;
     }
+
     /// <summary>
     /// Returns a randomly selected point located on the visible area of the tree.
     /// </summary>
-
-    Vector3 GetRandomPointOnTree()
+    private Vector3 GetRandomPointOnTree()
     {
         Bounds bounds = treeRenderer.bounds;
-        PolygonCollider2D treeCollider = treeRenderer.GetComponent<PolygonCollider2D>();
 
-        // Add margin to keep ornaments away from bottom
-        float marginBottom = bounds.size.y * 0.15f; // //value from the bottom of the tree to keep them from weirdly spawning too close to the boxes
+        // Add margin to keep ornaments away from bottom.
+        float marginBottom = bounds.size.y * 0.15f;
+
+        // If we have no collider, fall back to bounds sampling.
+        if (treeCollider == null)
+        {
+            float x = Random.Range(bounds.min.x, bounds.max.x);
+            float y = Random.Range(bounds.min.y + marginBottom, bounds.max.y);
+            return new Vector3(x, y, 0);
+        }
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
             float x = Random.Range(bounds.min.x, bounds.max.x);
-            float y = Random.Range(bounds.min.y + marginBottom, bounds.max.y); 
+            float y = Random.Range(bounds.min.y + marginBottom, bounds.max.y);
             Vector3 worldPos = new Vector3(x, y, 0);
 
-            // Check if point is inside the polygon collider
-            if (treeCollider != null && treeCollider.OverlapPoint(worldPos))
+            // Check if point is inside the polygon collider.
+            if (treeCollider.OverlapPoint(worldPos))
             {
                 return worldPos;
             }
@@ -158,7 +173,22 @@ public class OrnamentSpawner : MonoBehaviour
         return treeRenderer.transform.position;
     }
 
-    
-    
+    /// <summary>
+    /// Caches the PolygonCollider2D on the tree, if present.
+    /// </summary>
+    private void CacheTreeCollider()
+    {
+        if (treeRenderer == null)
+        {
+            treeCollider = null;
+            return;
+        }
 
+        treeCollider = treeRenderer.GetComponent<PolygonCollider2D>();
+        if (treeCollider == null)
+        {
+            Debug.LogWarning("OrnamentSpawner: No PolygonCollider2D found on the treeRenderer GameObject.");
+        }
+    }
 }
+

@@ -129,6 +129,12 @@ public class DragOrnaments : MonoBehaviour
 
             transform.localScale = originalScale * dragScale;
             transform.rotation = Quaternion.Euler(0, 0, Random.Range(-dragRotationRange, dragRotationRange));
+
+            // Play pickup sound once when a drag begins.
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayOrnamentPickup();
+            }
         }
     }
 
