@@ -120,7 +120,7 @@ public class DragOrnaments : MonoBehaviour
         int ornamentLayerMask = 1 << 6; // Layer 6
         RaycastHit2D hit = Physics2D.Raycast(mouseWorld, Vector2.zero, Mathf.Infinity, ornamentLayerMask);
 
-        Debug.Log($"Raycast hit: {(hit ? hit.collider.name : "nothing")}");
+       
 
         if (hit && hit.collider.gameObject == gameObject)
         {

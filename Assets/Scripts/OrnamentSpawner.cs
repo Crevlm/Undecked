@@ -158,31 +158,7 @@ public class OrnamentSpawner : MonoBehaviour
         return treeRenderer.transform.position;
     }
 
-    bool IsPointOnTree(Vector3 worldPos)
-    {
-        Sprite sprite = treeRenderer.sprite;
-        Texture2D tex = sprite.texture;
-
-        // Convert world position to local sprite position
-        Vector3 localPos = treeRenderer.transform.InverseTransformPoint(worldPos);
-
-        // Convert to pixel coordinates using sprite's pixelsPerUnit and pivot
-        float pixelX = (localPos.x * sprite.pixelsPerUnit) + sprite.pivot.x;
-        float pixelY = (localPos.y * sprite.pixelsPerUnit) + sprite.pivot.y;
-
-       
-       
-
-        // Check if within texture bounds
-        if (pixelX < 0 || pixelX >= tex.width ||
-            pixelY < 0 || pixelY >= tex.height)
-        {
-            return false;
-        }
-
-        // Check the alpha at this pixel
-        Color pixelColor = tex.GetPixel((int)pixelX, (int)pixelY);
-        return pixelColor.a > 0.1f;
+    
     }
 
 }
