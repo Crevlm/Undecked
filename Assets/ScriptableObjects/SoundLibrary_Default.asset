@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: SoundLibrary_Default
   m_EditorClassIdentifier: Assembly-CSharp::SoundLibrary
   ornamentPickupClips:
-  - {fileID: 8300000, guid: 82e2baedd9de0a44bace58eb9012a8f5, type: 3}
-  - {fileID: 8300000, guid: 10de5dd2911fcf540aa2073930ea3119, type: 3}
-  - {fileID: 8300000, guid: 5f6de9a6c3117754081f69f289e5aed0, type: 3}
+  - {fileID: 8300000, guid: 385fdd70f6e338b46aa0c69d8216dd87, type: 3}
+  - {fileID: 8300000, guid: a4671d1b87043d746af7a9bf39283d35, type: 3}
+  - {fileID: 8300000, guid: 2cc59b9f7fa4d1649a009a3d906ba126, type: 3}
   uiClick: {fileID: 0}
-  gameEndSting: {fileID: 0}
+  gameEndSting: {fileID: 8300000, guid: 18eb2c2b7439b444c88e485c3d481646, type: 3}
   backgroundMusicLoop: {fileID: 8300000, guid: 6be0067219a6b3245a2f044c2594b042, type: 3}
