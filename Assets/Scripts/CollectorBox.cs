@@ -6,7 +6,7 @@ public class CollectorBox : MonoBehaviour
 
     [Header("Scoring")]
     [SerializeField] private int pointsPerCorrect = 12;  // Points awarded for a correct ornament.
-    [SerializeField] private int pointsPerWrong = -6;    // Points deducted for a wrong ornament (not currently in use, can be implemented later).
+    //[SerializeField] private int pointsPerWrong = -6;    // Points deducted for a wrong ornament (not currently in use, can be implemented later).
     [SerializeField] private ScoreManager scoreManager; // Score receiver.
     [SerializeField] private GameObject scoreFeedbackPrefab; // Pop up score increaser
     
