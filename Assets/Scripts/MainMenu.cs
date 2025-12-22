@@ -1,16 +1,24 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+    [SerializeField] private string gameScreenName = "GameScene";
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+   public void StartGame()
     {
-        
+        SceneManager.LoadScene(gameScreenName);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void QuitGame()
     {
-        
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
+
 }

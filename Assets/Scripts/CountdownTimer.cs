@@ -108,7 +108,7 @@ public class CountdownTimer : MonoBehaviour
         int seconds = totalCentiseconds / 100;
         int centiseconds = totalCentiseconds % 100;
 
-        timerText.text = string.Format("{0:00}:{1:00}", seconds, centiseconds);
+        timerText.text = string.Format("Timer: {0:00}:{1:00}", seconds, centiseconds);
     }
 
     /// <summary>

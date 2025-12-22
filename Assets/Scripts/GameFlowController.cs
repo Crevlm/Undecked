@@ -26,6 +26,8 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private Button startButton; // Starts the 3-2-1 countdown (warm-up timer).
     [SerializeField] private Button restartButton; // Spawns a new set of ornaments and immediately starts a new round.
     [SerializeField] private Button quitButton; // Exits the application.
+    [SerializeField] private Button instructionsButton; // Opens the Instructions Image
+    [SerializeField] private Button closeInstructionsButton; // Closes the instructions image
 
     [Header("Starting Countdown UI")]
     [SerializeField] private TextMeshProUGUI startCountdownText; // "3-2-1-GO" text overlay.
@@ -33,6 +35,9 @@ public class GameFlowController : MonoBehaviour
     [Header("End Screen Text")]
     [SerializeField] private TextMeshProUGUI finalScoreText; // Displays the player's score at the end.
     [SerializeField] private TextMeshProUGUI finalHighScoreText; // Displays the saved high score at the end.
+
+    [Header("How to Play")]
+    [SerializeField] private GameObject instructionsImage; // The instructions image
 
     [Header("Ornaments")]
     [SerializeField] private Transform ornamentRoot; // Assign the tree root to find/reset all ornaments under it.
@@ -54,6 +59,8 @@ public class GameFlowController : MonoBehaviour
         if (startButton != null) startButton.onClick.AddListener(OnStartPressed);
         if (restartButton != null) restartButton.onClick.AddListener(OnRestartPressed);
         if (quitButton != null) quitButton.onClick.AddListener(OnQuitPressed);
+        if (instructionsButton != null) instructionsButton.onClick.AddListener(OnInstructionsPressed);
+        if (closeInstructionsButton != null) closeInstructionsButton.onClick.AddListener(OnCloseInstructionsPressed);
 
         // Subscribe to timer completion so round can end.
         if (countdownTimer != null)
@@ -80,6 +87,13 @@ public class GameFlowController : MonoBehaviour
 
         CacheOrnaments();
         GoToIdleState();
+
+        //Hide the instructions button unless it's clicked
+        if (instructionsImage != null)
+        {
+            instructionsImage.SetActive(false);
+        }
+
     }
 
     /// <summary>
@@ -167,6 +181,35 @@ public class GameFlowController : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
     }
+
+    private void OnInstructionsPressed()
+    {
+        
+        if (instructionsImage != null)
+        {
+            
+            instructionsImage.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("Instructions image is not assigned in the Inspector!");
+        }
+    }
+
+    private void OnCloseInstructionsPressed()
+    {
+        Debug.Log("Close instructions button pressed!");
+        if (instructionsImage != null)
+        {
+            instructionsImage.SetActive(false);
+        }
+        if (closeInstructionsButton != null)
+        {
+            closeInstructionsButton.gameObject.SetActive(false);
+        }
+    }
+
+
 
     /// <summary>
     /// Handles gameplay timer completion: ends the round, saves high score, and shows the end screen UI.
