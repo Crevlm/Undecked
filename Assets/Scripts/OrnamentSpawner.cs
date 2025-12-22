@@ -159,6 +159,6 @@ public class OrnamentSpawner : MonoBehaviour
     }
 
     
-    }
+    
 
 }
