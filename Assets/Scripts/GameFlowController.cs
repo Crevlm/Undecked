@@ -4,14 +4,30 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Coordinates the overall round lifecycle and screen flow:
+/// Idle (Start available) > Starting (3-2-1-GO) > Running (timer active) > EndScreen (score shown, restart available).
+/// </summary>
+/// <remarks>
+/// Key design intent:
+/// - Ornaments spawn once on game launch via OrnamentSpawner.Start().
+/// - Start button begins the 3-2-1-GO countdown and then starts the gameplay timer (no respawn here).
+/// - End screen appears when the timer completes; Start remains hidden/disabled.
+/// - Restart button respawns a fresh ornament set AND immediately begins 3-2-1-GO (no extra Start click).
+///
+/// Audio:
+/// - UI clicks trigger via <see cref="AudioManager.Instance"/> if present.
+/// - End-of-round sting triggers when the timer completes.
+/// - Background music can be started once (optional) on Start.
+/// </remarks>
 public class GameFlowController : MonoBehaviour
 {
     private enum GameState
     {
-        Idle, // Play screen visible, not running, Start enabled.
-        Starting, // 3-2-1 countdown playing.
-        Running, // Timer running; gameplay active.
-        EndScreen // End screen visible; Start stays off until Restart.
+        Idle,       // Play screen visible, not running, Start enabled.
+        Starting,   // 3-2-1 countdown playing.
+        Running,    // Timer running; gameplay active.
+        EndScreen   // End screen visible; Start stays off until Restart.
     }
 
     [Header("Core References")]
@@ -20,79 +36,88 @@ public class GameFlowController : MonoBehaviour
 
     [Header("UI Screens")]
     [SerializeField] private GameObject playScreenRoot; // Parent object for play UI.
-    [SerializeField] private GameObject endScreenRoot; // Parent object for end UI.
+    [SerializeField] private GameObject endScreenRoot;  // Parent object for end UI.
 
     [Header("Buttons")]
-    [SerializeField] private Button startButton; // Starts the 3-2-1 countdown (warm-up timer).
+    [SerializeField] private Button startButton;   // Starts the 3-2-1 countdown (warm-up timer).
     [SerializeField] private Button restartButton; // Spawns a new set of ornaments and immediately starts a new round.
-    [SerializeField] private Button quitButton; // Exits the application.
-    //[SerializeField] private Button instructionsButton; // Opens the Instructions Image
-    //[SerializeField] private Button closeInstructionsButton; // Closes the instructions image
+    [SerializeField] private Button quitButton;    // Exits the application.
 
     [Header("Starting Countdown UI")]
     [SerializeField] private TextMeshProUGUI startCountdownText; // "3-2-1-GO" text overlay.
 
     [Header("End Screen Text")]
-    [SerializeField] private TextMeshProUGUI finalScoreText; // Displays the player's score at the end.
+    [SerializeField] private TextMeshProUGUI finalScoreText;     // Displays the player's score at the end.
     [SerializeField] private TextMeshProUGUI finalHighScoreText; // Displays the saved high score at the end.
+
+    [Header("Ornaments")]
+    [SerializeField] private Transform ornamentRoot;        // Assign the tree root to find/reset all ornaments under it (fallback path).
+    [SerializeField] private OrnamentSpawner ornamentSpawner; // Spawns ornaments and can respawn on Restart.
+
+    [Header("Audio (Optional)")]
+    [Tooltip("If enabled, the controller will request background music when the scene starts.")]
+    [SerializeField] private bool startBackgroundMusicOnSceneStart = true;
 
     //[Header("How to Play")]
     //[SerializeField] private GameObject instructionsImage; // The instructions image
-
-    [Header("Ornaments")]
-    [SerializeField] private Transform ornamentRoot; // Assign the tree root to find/reset all ornaments under it.
-    [SerializeField] private OrnamentSpawner ornamentSpawner; // Spawns ornaments and can respawn on Restart.
 
     private Ornament[] ornaments;
     private GameState state = GameState.Idle;
     private Coroutine startRoutine;
 
     /// <summary>
-    /// Registers UI button handlers and subscribes to the gameplay timer completion event.
+    /// Registers UI button handlers and subscribes to gameplay timer completion.
     /// </summary>
     /// <remarks>
-    /// This method wires up input/events early so the controller can transition between game states.
+    /// This wiring occurs in Awake so UI clicks are captured immediately.
     /// </remarks>
     private void Awake()
     {
-        // Button assignments.
         if (startButton != null) startButton.onClick.AddListener(OnStartPressed);
         if (restartButton != null) restartButton.onClick.AddListener(OnRestartPressed);
         if (quitButton != null) quitButton.onClick.AddListener(OnQuitPressed);
-        //if (instructionsButton != null) instructionsButton.onClick.AddListener(OnInstructionsPressed);
-        //if (closeInstructionsButton != null) closeInstructionsButton.onClick.AddListener(OnCloseInstructionsPressed);
 
-        // Subscribe to timer completion so round can end.
         if (countdownTimer != null)
         {
             countdownTimer.CountdownCompleted += OnTimerCompleted;
         }
+
     }
 
     /// <summary>
-    /// Caches core references (timer, score, spawner), discovers ornaments, and initializes the UI to the Idle state.
+    /// Caches core references (timer, score, spawner), discovers ornaments, and initializes UI to Idle.
     /// </summary>
     /// <remarks>
-    /// The initial ornament population is expected to occur via <see cref="OrnamentSpawner.Start"/> (not here).
+    /// Ornaments are expected to spawn via <see cref="OrnamentSpawner.Start"/>. This controller does not spawn on load.
     /// </remarks>
     private void Start()
     {
-        // Cache references if not assigned.
+        // Cache references if not assigned in Inspector.
         if (countdownTimer == null) countdownTimer = FindFirstObjectByType<CountdownTimer>();
         if (scoreManager == null) scoreManager = FindFirstObjectByType<ScoreManager>();
-
-        // NOTE: The previous line called FindObjectsByType but did not assign the result.
-        // This ensures ornamentSpawner gets a usable reference when not set in the inspector.
         if (ornamentSpawner == null) ornamentSpawner = FindFirstObjectByType<OrnamentSpawner>();
 
         CacheOrnaments();
         GoToIdleState();
 
+        // Optional: request background music once the scene starts.
+        if (startBackgroundMusicOnSceneStart)
+        {
+            if (AudioManager.Instance == null)
+            {
+                Debug.LogWarning("GameFlowController: AudioManager.Instance is NULL. No background music will play.");
+            }
+            else
+            {
+                AudioManager.Instance.PlayBackgroundMusic();
+            }
+        }
+
         //Hide the instructions button unless it's clicked
         //if (instructionsImage != null)
-       // {
-       //     instructionsImage.SetActive(false);
-       // }
+        // {
+        //     instructionsImage.SetActive(false);
+        // }
 
     }
 
@@ -101,18 +126,19 @@ public class GameFlowController : MonoBehaviour
     /// </summary>
     private void OnDestroy()
     {
-        // Clean up event subscription.
         if (countdownTimer != null)
         {
             countdownTimer.CountdownCompleted -= OnTimerCompleted;
         }
+
     }
+
 
     /// <summary>
     /// Collects all ornaments under the provided <see cref="ornamentRoot"/> (or falls back to a scene-wide search).
     /// </summary>
     /// <remarks>
-    /// This is used after a respawn to refresh internal references, and also provides a fallback path if no spawner is present.
+    /// Used after a respawn to refresh internal references, and as a fallback path if no spawner is present.
     /// </remarks>
     private void CacheOrnaments()
     {
@@ -131,38 +157,34 @@ public class GameFlowController : MonoBehaviour
     /// Handles Start button clicks: begins the 3-2-1-GO countdown and then starts the gameplay timer.
     /// </summary>
     /// <remarks>
-    /// This does not spawn or reset ornaments. Ornaments are expected to already exist from the initial game launch,
-    /// and Restart is responsible for respawning a fresh set between rounds.
+    /// Start does not spawn or reset ornaments. Ornaments are expected to already exist from initial game launch.
     /// </remarks>
     private void OnStartPressed()
     {
+        AudioManager.Instance?.PlayUiClick();
+
         if (state != GameState.Idle)
             return;
 
-        if (startRoutine != null)
-            StopCoroutine(startRoutine);
-
-        // IMPORTANT: Start should NOT remove/spawn ornaments.
-        // Launch already spawned them; Start should just begin the round.
+        StopStartRoutineIfRunning();
         startRoutine = StartCoroutine(StartRoundRoutine());
     }
 
     /// <summary>
-    /// Handles Restart button clicks: spawns a fresh set of ornaments and immediately begins a new 3-2-1-GO countdown.
+    /// Handles Restart button clicks: respawns a fresh set of ornaments and immediately begins a new 3-2-1-GO countdown.
     /// </summary>
     /// <remarks>
     /// Restart is only valid from the EndScreen state. It does not require the player to press Start again.
     /// </remarks>
     private void OnRestartPressed()
     {
+        AudioManager.Instance?.PlayUiClick();
+        AudioManager.Instance?.StopTimerTickLoop();
+
         if (state != GameState.EndScreen)
             return;
 
-        if (startRoutine != null)
-        {
-            StopCoroutine(startRoutine);
-            startRoutine = null;
-        }
+        StopStartRoutineIfRunning();
 
         // Restart should spawn a new set and immediately begin 3-2-1-GO.
         RespawnOrnaments();
@@ -175,6 +197,9 @@ public class GameFlowController : MonoBehaviour
     /// </summary>
     private void OnQuitPressed()
     {
+        AudioManager.Instance?.PlayUiClick();
+        AudioManager.Instance?.StopTimerTickLoop();
+
         Application.Quit();
 
 #if UNITY_EDITOR
@@ -184,10 +209,10 @@ public class GameFlowController : MonoBehaviour
 
     //private void OnInstructionsPressed()
     //{
-        
+
     //    if (instructionsImage != null)
     //    {
-            
+
     //        instructionsImage.SetActive(true);
     //    }
     //    if (closeInstructionsButton != null)
@@ -226,7 +251,13 @@ public class GameFlowController : MonoBehaviour
         if (state != GameState.Running)
             return;
 
+        AudioManager.Instance?.StopTimerTickLoop();
+        AudioManager.Instance?.PlayGameEndSting();
+
         state = GameState.EndScreen;
+
+        // Play end-of-round sting once when the timer completes.
+        AudioManager.Instance?.PlayGameEndSting();
 
         if (scoreManager != null)
         {
@@ -237,7 +268,7 @@ public class GameFlowController : MonoBehaviour
         SetPlayScreenVisible(false);
         SetEndScreenVisible(true);
 
-        // Start button stays off while end screen is active; Restart re-enables it.
+        // Start button stays off while end screen is active; Restart is the path forward.
         SetStartButtonEnabled(false);
         SetStartButtonVisible(false);
     }
@@ -265,6 +296,15 @@ public class GameFlowController : MonoBehaviour
             countdownTimer.StartCountdown();
         }
 
+        state = GameState.Running;
+        if (countdownTimer != null)
+        {
+            countdownTimer.StartCountdown();
+        }
+
+        AudioManager.Instance?.PlayTimerTickLoop();
+
+
         startRoutine = null;
     }
 
@@ -282,69 +322,29 @@ public class GameFlowController : MonoBehaviour
         startCountdownText.gameObject.SetActive(true);
 
         startCountdownText.text = "3";
-        yield return new WaitForSeconds(1.2f);
+        AudioManager.Instance?.PlayCountdownTick();
+        yield return new WaitForSeconds(.9f);
 
         startCountdownText.text = "2";
-        yield return new WaitForSeconds(1.2f);
+        AudioManager.Instance?.PlayCountdownTick();
+        yield return new WaitForSeconds(.9f);
 
         startCountdownText.text = "1";
-        yield return new WaitForSeconds(1.2f);
+        AudioManager.Instance?.PlayCountdownTick();
+        yield return new WaitForSeconds(.9f);
 
         startCountdownText.text = "GO!";
-        yield return new WaitForSeconds(1f);
+        AudioManager.Instance?.PlayCountdownGo();
+        yield return new WaitForSeconds(.85f);
 
         startCountdownText.gameObject.SetActive(false);
-    }
-
-    /// <summary>
-    /// Resets score and ornaments to prepare for a fresh round, then hides the end screen.
-    /// </summary>
-    /// <remarks>
-    /// This method respawns ornaments if a spawner is available; otherwise it falls back to resetting any existing
-    /// ornament instances that are present in the scene hierarchy.
-    /// </remarks>
-    private void ResetRoundState()
-    {
-        if (scoreManager != null)
-        {
-            scoreManager.ResetScore();
-        }
-
-        // If using spawner-driven ornaments, respawn a fresh set.
-        if (ornamentSpawner != null)
-        {
-            ornamentSpawner.RespawnAllOrnaments();
-            CacheOrnaments(); // Re-cache ornaments after respawn if you rely on the ornaments array elsewhere.
-        }
-        else
-        {
-            // Fallback: reset existing ornaments if no spawner is assigned.
-            if (ornaments == null || ornaments.Length == 0)
-            {
-                CacheOrnaments();
-            }
-
-            if (ornaments != null)
-            {
-                for (int i = 0; i < ornaments.Length; i++)
-                {
-                    if (ornaments[i] != null)
-                    {
-                        ornaments[i].ResetOrnament();
-                    }
-                }
-            }
-        }
-
-        UpdateEndScreenText();
-        SetEndScreenVisible(false);
     }
 
     /// <summary>
     /// Sets the game to Idle: shows the play screen, hides the end screen, and enables the Start button.
     /// </summary>
     /// <remarks>
-    /// This state is used on initial load. It does not respawn ornaments; the initial tree population is expected to
+    /// This state is used on initial load. It does not respawn ornaments; initial tree population is expected to
     /// occur via <see cref="OrnamentSpawner.Start"/>.
     /// </remarks>
     private void GoToIdleState()
@@ -367,9 +367,6 @@ public class GameFlowController : MonoBehaviour
         {
             countdownTimer.ResetCountdown();
         }
-
-        // Do NOT respawn ornaments here.
-        // Game launch spawns them via OrnamentSpawner.Start().
     }
 
     /// <summary>
@@ -470,6 +467,22 @@ public class GameFlowController : MonoBehaviour
         {
             ornamentSpawner.RespawnAllOrnaments();
             CacheOrnaments(); // If ornaments[] is used elsewhere, this ensures references are current.
+        }
+        else
+        {
+            Debug.LogWarning("GameFlowController: ornamentSpawner is NULL. Cannot respawn ornaments.");
+        }
+    }
+
+    /// <summary>
+    /// Stops the currently running start coroutine if one is active.
+    /// </summary>
+    private void StopStartRoutineIfRunning()
+    {
+        if (startRoutine != null)
+        {
+            StopCoroutine(startRoutine);
+            startRoutine = null;
         }
     }
 }

@@ -8,11 +8,19 @@ public class SoundLibrary : ScriptableObject
     public AudioClip[] ornamentPickupClips;
 
     [Header("UI")]
-    public AudioClip uiClick;
+    public AudioClip[] uiClick;
 
     [Header("Game State")]
     public AudioClip gameEndSting;
 
     [Header("Music")]
     public AudioClip backgroundMusicLoop;
+
+    [Header("Start Countdown")]
+    public AudioClip startCountdownTick;
+    public AudioClip countdownGo;
+
+    [Header("Timer")]
+    public AudioClip timerTickLoop;
+
 }

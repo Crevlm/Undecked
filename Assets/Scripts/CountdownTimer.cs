@@ -31,7 +31,7 @@ public class CountdownTimer : MonoBehaviour
     private void Start()
     {
         currentTime = Mathf.Max(0f, countDownTime); // Reset the timer to the configured duration.
-        UpdateTimerDisplay(); // Update the timer display to show the correct starting text (e.g., 12:00).
+        UpdateTimerDisplay(); // Update the timer display to show the correct starting text 
     }
 
     // Update is called once per frame.

@@ -16,6 +16,13 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 385fdd70f6e338b46aa0c69d8216dd87, type: 3}
   - {fileID: 8300000, guid: a4671d1b87043d746af7a9bf39283d35, type: 3}
   - {fileID: 8300000, guid: 2cc59b9f7fa4d1649a009a3d906ba126, type: 3}
-  uiClick: {fileID: 0}
+  uiClick:
+  - {fileID: 8300000, guid: 5ba580d3936994449a070c82a69f56d9, type: 3}
+  - {fileID: 8300000, guid: 98dbee6652fb747429e073c076c7e9ac, type: 3}
+  - {fileID: 8300000, guid: 4826609423ad927488c6d7b96744a88c, type: 3}
+  - {fileID: 8300000, guid: 6c9e8e23af2cdd3489dc174b257df1e8, type: 3}
   gameEndSting: {fileID: 8300000, guid: 18eb2c2b7439b444c88e485c3d481646, type: 3}
-  backgroundMusicLoop: {fileID: 8300000, guid: 6be0067219a6b3245a2f044c2594b042, type: 3}
+  backgroundMusicLoop: {fileID: 0}
+  startCountdownTick: {fileID: 8300000, guid: 901017c6999f19342bc1b0440ffa29b9, type: 3}
+  countdownGo: {fileID: 8300000, guid: 94ba7b3877a256e4491bbc34e655ea60, type: 3}
+  timerTickLoop: {fileID: 8300000, guid: 66f7164518356b34790ee92e2b3cb0c0, type: 3}

@@ -11,37 +11,30 @@ public class SquareCameraViewport : MonoBehaviour
         Apply();
     }
 
-    private void OnValidate()
-    {
-        if (cam == null) cam = GetComponent<Camera>();
-        Apply();
-    }
-
     private void Update()
     {
-        // To support resizing (windowed builds), keep updating.
+        // Keep it correct if the browser resizes / changes devicePixelRatio.
         Apply();
     }
 
     private void Apply()
     {
-        float targetAspect = 1f; // 1:1 square
+        const float targetAspect = 1f; // 1:1
         float windowAspect = (float)Screen.width / Screen.height;
 
         if (windowAspect > targetAspect)
         {
-            // Window is wider than target: pillarbox (bars left/right)
+            // Wider than square: pillarbox
             float scaleWidth = targetAspect / windowAspect;
             float xOffset = (1f - scaleWidth) * 0.5f;
             cam.rect = new Rect(xOffset, 0f, scaleWidth, 1f);
         }
         else
         {
-            // Window is taller than target: letterbox (bars top/bottom)
+            // Taller than square: letterbox
             float scaleHeight = windowAspect / targetAspect;
             float yOffset = (1f - scaleHeight) * 0.5f;
             cam.rect = new Rect(0f, yOffset, 1f, scaleHeight);
         }
     }
 }
-

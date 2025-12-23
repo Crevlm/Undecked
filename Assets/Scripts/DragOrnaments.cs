@@ -124,6 +124,9 @@ public class DragOrnaments : MonoBehaviour
 
         if (hit && hit.collider.gameObject == gameObject)
         {
+            Debug.Log($"PICKUP: {gameObject.name}");
+            AudioManager.Instance?.PlayOrnamentPickup();
+
             isDragging = true;
             offset = transform.position - (Vector3)mouseWorld;
 
